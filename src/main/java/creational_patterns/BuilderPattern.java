@@ -197,7 +197,7 @@ final class HttpRequest{
     }
 }
 
-public class Builder {
+public class BuilderPattern {
 
     static void main() {
         HttpRequest request = new HttpRequest.builder(AllowedHTTPMethods.POST, "https://localhost:8080")

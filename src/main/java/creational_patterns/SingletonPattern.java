@@ -88,7 +88,7 @@ class ConfigurationLoader implements Loader {
     }
 }
 
-public class Singleton {
+public class SingletonPattern {
 
     private static void testThreadSafety() throws Exception {
         int threads = 100;

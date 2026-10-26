@@ -215,7 +215,7 @@ class NotificationFactoryTest {
     }
 }
 
-public class Factory {
+public class FactoryPattern {
     static void main() {
         NotificationFactoryTest.testFactoryReturnsCorrectTypes();
         NotificationFactoryTest.testNullChannel();

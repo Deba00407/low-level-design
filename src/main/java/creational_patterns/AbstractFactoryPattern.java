@@ -380,7 +380,7 @@ final class Application {
     }
 }
 
-public class AbstractFactory {
+public class AbstractFactoryPattern {
 
     static void main() {
         Application app = new Application(UIFactoryProvider.forPlatform(Platform.Linux));
