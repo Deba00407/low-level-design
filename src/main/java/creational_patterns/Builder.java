@@ -1,5 +1,8 @@
 package creational_patterns;
 
+import lombok.Getter;
+import lombok.ToString;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -70,6 +73,8 @@ final class Validator {
     }
 }
 
+@Getter
+@ToString(exclude = {"body", "authenticationToken"})
 final class HttpRequest{
     // Required fields
     private final AllowedHTTPMethods method;
@@ -85,21 +90,17 @@ final class HttpRequest{
     private final Map<String, String> headers;
     private final Map<String, String> queryParams;
 
-    private static boolean validateInput(builder requestBuilder){
+    private static void validateInput(builder requestBuilder){
         Validator.validateUrl(requestBuilder.url);
         Validator.validateBody(requestBuilder.method, requestBuilder.body, requestBuilder.contentType);
         Validator.validateTimeout(requestBuilder.timeoutInMilliseconds);
         Validator.validateRetries(requestBuilder.retries);
         Validator.validateAuthorizationToken(requestBuilder.authenticationToken);
-
-        return true;
     }
 
     private HttpRequest(builder requestBuilder){
 
-        if(!validateInput(requestBuilder)){
-            throw new IllegalArgumentException("Invalid request inputs");
-        }
+        validateInput(requestBuilder);
 
         this.method = requestBuilder.method;
         this.url = requestBuilder.url;
@@ -113,27 +114,35 @@ final class HttpRequest{
     }
 
     static class builder{
+
+        private static final int DEFAULT_TIMEOUT_IN_MILLISECONDS = 30_000;
+        private static final int DEFAULT_RETRIES = 0;
+
         // Mandatory
         private final AllowedHTTPMethods method;
         private final String url;
 
         // Optional
-        private final Map<String, String> headers = new HashMap<>();
-        private final Map<String, String> queryParams = new HashMap<>();
-        private String body = "";
-        private String contentType = "applicaiton/json";
-        private int timeoutInMilliseconds = 30_000;
-        private int retries = 0;
-        private String authenticationToken = "";
+        private final Map<String, String> headers;
+        private final Map<String, String> queryParams;
+        private String authenticationToken;
+        private String body;
+        private String contentType;
+        private int timeoutInMilliseconds = DEFAULT_TIMEOUT_IN_MILLISECONDS;
+        private int retries = DEFAULT_RETRIES;
 
         builder(AllowedHTTPMethods method, String url){
-            this.method = method;
-            this.url = url;
+            this.method = Objects.requireNonNull(method);
+            this.url = Objects.requireNonNull(url);
+
+            this.headers = new HashMap<>();
+            this.queryParams = new HashMap<>();
         }
 
         public builder headers(Map<String, String> headers){
+            // make sure the keys are case-insensitive by converting all to lowercase
             for(String key : headers.keySet()){
-                this.headers.put(key.toLowerCase(), headers.get(key));
+                this.headers.put(key.toLowerCase(Locale.ROOT), headers.get(key));
             }
 
             return this;
@@ -141,7 +150,7 @@ final class HttpRequest{
 
         public builder queryParams(Map<String, String> queryParams){
             for(String key : queryParams.keySet()){
-                this.queryParams.put(key.toLowerCase(), queryParams.get(key)); // make sure the keys are case-insensitive by converting all to lowercase
+                this.queryParams.put(key, queryParams.get(key));
             }
             return this;
         }
@@ -185,11 +194,6 @@ final class HttpRequest{
                     + "=" + URLEncoder.encode(queryParams.get(key), StandardCharsets.UTF_8));
         }
         return url + sj;
-    }
-
-    @Override
-    public String toString(){
-        return String.format("HttpRequest{method=%s, url=%s, headers=%s, authenticationToken=%s, body=%s, contentType=%s, queryParams=%s, timeoutInMilliseconds=%s, retries=%s}", method, url, headers, authenticationToken, body, contentType, queryParams, timeoutInMilliseconds, retries);
     }
 }
 
