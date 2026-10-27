@@ -326,9 +326,9 @@ public class PrototypePattern {
         check("2: copy has equal contents", copy.equals(original));
 
         // 3: section mutation
-        copy.getSections().get(0).setText("CHANGED");
+        copy.getSections().getFirst().setText("CHANGED");
         check("3: section change does not affect original",
-                original.getSections().get(0).getText().equals("Invoice for {{customerName}}"));
+                original.getSections().getFirst().getText().equals("Invoice for {{customerName}}"));
 
         // 4: tag mutation
         copy.getMetadata().addTag("urgent");
@@ -360,18 +360,17 @@ public class PrototypePattern {
                 LayoutLoader.LOAD_COUNT.get() == 1);
 
         // 9: subclass-safe copy through a Document reference
-        Document asDocument = original;
-        Document invoiceCopy = asDocument.copy();
+        Document invoiceCopy = original.copy();
         check("9: copy through Document reference is an Invoice",
                 invoiceCopy instanceof Invoice inv && inv.getTaxRate() == 0.18);
 
         // 10: registry stores its own copy
         Document mine = buildInvoiceTemplate();
         registry.register("mine", mine);
-        mine.getSections().get(0).setText("mutated after register");
+        mine.getSections().getFirst().setText("mutated after register");
         mine.getMetadata().addTag("late");
         check("10: mutating the registered original does not affect the registry",
-                registry.create("mine").getSections().get(0).getText().equals("Invoice for {{customerName}}")
+                registry.create("mine").getSections().getFirst().getText().equals("Invoice for {{customerName}}")
                         && !registry.create("mine").getMetadata().getTags().contains("late"));
 
         // 11: null arguments
@@ -384,11 +383,11 @@ public class PrototypePattern {
         ShallowDocument shallow = new ShallowDocument(new Metadata("A", LocalDate.now()));
         shallow.sections.add(new Section("H", "original text", "s"));
         ShallowDocument shallowCopy = shallow.shallowCopy();
-        shallowCopy.sections.get(0).setText("changed via shallow copy");
+        shallowCopy.sections.getFirst().setText("changed via shallow copy");
         shallowCopy.metadata.addTag("leak");
         shallowCopy.placeholders.put("k", "v");
         check("12: shallow copy leaks section change into original (expected to leak)",
-                shallow.sections.get(0).getText().equals("changed via shallow copy"));
+                shallow.sections.getFirst().getText().equals("changed via shallow copy"));
         check("12: shallow copy leaks tag into original (expected to leak)",
                 shallow.metadata.getTags().contains("leak"));
         check("12: shallow copy leaks placeholder into original (expected to leak)",
